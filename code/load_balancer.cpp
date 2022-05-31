@@ -2,11 +2,25 @@
 
 #include <string>
 
-void load_balancer::listen_clients() {
+void LoadBalancer::listen_clients() {
     while (true) {
-        int temp_fd = listener_socket.accept();
-        std::string request_msg = listener_socket.recv(/*TODO*/);
+        int temp_fd = m_listener_socket.accept();
+        std::string request_msg = temp_fd.recv(/*TODO*/);
         int dest_server = get_dest(Request(request_msg));
-        servers[dest_server].requests_queue.enqueue(request_msg, temp_fd);
+        m_servers[dest_server].requests_queue.push(request_msg, temp_fd);
+    }
+}
+
+LoadBalancer::Request::Request(std::string msg):time(msg[1] - '0') {
+    switch (msg[0]) {
+    case 'P':
+        type = RequestType::PICTURE;
+        break;
+    case 'V':
+        type = RequestType::VIDEO;
+        break;
+    case 'M':
+        type = RequestType::MUSIC;
+        break;
     }
 }

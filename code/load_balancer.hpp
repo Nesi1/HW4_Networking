@@ -2,18 +2,19 @@
 #define LOAD_BALANCER_HPP
 
 #include "socket_wrapper.hpp"
+#include "server_queue.hpp"
 
-#include <vector>
 #include <array>
-#include <string>
 #include <queue>
+#include <string>
+#include <vector>
 
 #define NUM_SERVERS 3
 
-class load_balancer
+class LoadBalancer
 {
 public:
-    load_balancer(); // TODO: this also needs to initialize the queues
+    LoadBalancer(); // TODO: this also needs to initialize the queues
     void connect_servers();
     void listen_clients();
 
@@ -34,31 +35,19 @@ private:
         RequestType type;
         int time;
 
-        Request(std::string msg):time(msg[1] - '0') {
-            switch (msg[0]) {
-            case 'P':
-                type = RequestType::PICTURE;
-                break;
-            case 'V':
-                type = RequestType::VIDEO;
-                break;
-            case 'M':
-                type = RequestType::MUSIC;
-                break;
-            }
-        }
+        Request(std::string msg);
     };
 
     struct server_descriptor
     {
         double remaining_time; //TODO: change type to time
         ServerType type;
-        socket_wrapper socket;
+        SocketWrapper socket;
         ServerQueue requests_queue;
     };
 
-    std::array<server_descriptor, NUM_SERVERS> servers;
-    socket_wrapper listener_socket;
+    std::array<server_descriptor, NUM_SERVERS> m_servers;
+    SocketWrapper m_listener_socket;
 
     int get_dest(Request req);
 };
