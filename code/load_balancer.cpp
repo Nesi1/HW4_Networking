@@ -20,7 +20,7 @@ const array<string, LoadBalancer::c_num_servers> c_server_addrs{
     "192.168.0.103"
 };
 
-LoadBalancer::LoadBalancer(): m_send_id(0), m_recv_id(0) {
+LoadBalancer::LoadBalancer() {
     m_listener_socket.Bind(c_hosts_iface_addr,c_port);
     m_listener_socket.Listen(c_backlog);
     for (int i = 0; i < c_num_servers; ++i) {
@@ -29,10 +29,11 @@ LoadBalancer::LoadBalancer(): m_send_id(0), m_recv_id(0) {
 }
 
 void LoadBalancer::run() {
-    thread t(&LoadBalancer::calc_dests, this);
+    std::array<thread, 1 + c_num_servers*2> t;
+    t[0] = thread(&LoadBalancer::calc_dests, this);
     for (int i = 0; i < c_num_servers; ++i) {
-        thread t1(&LoadBalancer::send_server, this);
-        thread t2(&LoadBalancer::recv_server, this);
+        t[2*i+1] = thread(&LoadBalancer::send_server, this, i);
+        t[2*i+2] = thread(&LoadBalancer::recv_server, this, i);
     }
     listen_clients();
     assert(false);
@@ -81,18 +82,16 @@ array<int, LoadBalancer::c_num_servers> LoadBalancer::get_goodness(Request req) 
     return array<int, c_num_servers>{1,2,3}; // TODO: implement the scheduling algorithm
 }
 
-void LoadBalancer::send_server() {
+void LoadBalancer::send_server(int server_index) {
     while (true) {
-        int server_index = m_send_id.fetch_add(1);
         ServerQueue::QueueItem query = m_servers[server_index].requests_queue.pop();
         m_servers[server_index].socket.Send(query.msg, 0);
         m_servers[server_index].feedback_queue.push(query.msg, query.response_sock);
     }
 }
 
-void LoadBalancer::recv_server() {
+void LoadBalancer::recv_server(int server_index) {
     while (true) {
-        int server_index = m_recv_id.fetch_add(1);
         string response = m_servers[server_index].socket.Recv(c_message_length, 0);
         ServerQueue::QueueItem query = m_servers[server_index].feedback_queue.pop();
         query.response_sock.Send(response, 0);
