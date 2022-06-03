@@ -29,10 +29,10 @@ LoadBalancer::LoadBalancer(): m_send_id(0), m_recv_id(0) {
 }
 
 void LoadBalancer::run() {
-    thread(calc_dests);
+    thread t(&LoadBalancer::calc_dests, this);
     for (int i = 0; i < c_num_servers; ++i) {
-        thread(send_server);
-        thread(recv_server);
+        thread t1(&LoadBalancer::send_server, this);
+        thread t2(&LoadBalancer::recv_server, this);
     }
     listen_clients();
     assert(false);

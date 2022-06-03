@@ -18,7 +18,7 @@ public:
     void Listen(int backlog);
     void Connect(const std::string& addr, uint16_t port);
     SocketWrapper Accept();
-    std::string Recv(size_t len, int flags);
+    std::string Recv(ssize_t len, int flags);
     void Send(const std::string& msg, int flags);
 
 private:
