@@ -3,6 +3,13 @@
 
 #include <string>
 
-void syscall_error_handler(const std::string& error_msg);
+#include <netinet/in.h>
+
+#define PORT 80
+#define HOSTS_INTERFACE_ATTR "10.0.0.1"
+
+sockaddr_in make_sockaddr(const std::string& ipv4_addr, uint16_t port);
+
+void handle_sys_error(const std::string& error_msg);
 
 #endif // UTILITY_HPP
