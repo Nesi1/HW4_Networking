@@ -2,14 +2,16 @@
 
 #include <mutex>
 
-void ServerQueue::push(const std::string& msg, SocketWrapper& sock) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+using namespace std;
+
+void ServerQueue::push(const string& msg, const SocketWrapper& sock) {
+    lock_guard<mutex> lock(m_mutex);
     m_queue.push(QueueItem{msg, sock});
     m_cond_var.notify_one();
 }
 
 ServerQueue::QueueItem ServerQueue::pop() {
-    std::lock_guard lock(m_mutex);
+    lock_guard lock(m_mutex);
     while (m_queue.empty()) {
         m_cond_var.wait(lock);
     }

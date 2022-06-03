@@ -13,7 +13,9 @@
 
 class LoadBalancer
 {
+
 public:
+
     LoadBalancer(); // TODO: this also needs to initialize the queues
     void connect_servers();
     void listen_clients();
@@ -50,6 +52,7 @@ private:
     SocketWrapper m_listener_socket;
 
     int get_dest(Request req);
+    
 };
 
 #endif // LOAD_BALANCER_HPP
