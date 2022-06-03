@@ -10,16 +10,20 @@ public:
     SocketWrapper(const SocketWrapper& other) = delete;
     ~SocketWrapper();
 
+    SocketWrapper& operator=(const SocketWrapper& other) = delete;
+
     void Bind(const string& ipv4_iface_addr, uint16_t port);
     void Listen(int backlog);
     void Connect(const string& ipv4_addr, uint16_t port);
     SocketWrapper Accept();
-    void Recv();
-    void Send();
+    std::string Recv(size_t len, int flags);
+    void Send(const std::string& msg, int flags);
 
 private:
 
     int m_sock_fd;
+
+    SocketWrapper(int sock_fd);
 
 };
 
