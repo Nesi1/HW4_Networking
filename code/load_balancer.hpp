@@ -44,6 +44,7 @@ private:
         ServerType type;
         SocketWrapper socket;
         ServerQueue requests_queue;
+        ServerQueue feedback_queue;
     };
 
     std::array<ServerDescriptor, NUM_SERVERS> m_servers;

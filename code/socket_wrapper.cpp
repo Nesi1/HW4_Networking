@@ -2,12 +2,13 @@
 
 #include "utility.hpp"
 
-#include <array>
 #include <iostream>
+#include <vector>
 
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -70,7 +71,7 @@ SocketWrapper SocketWrapper::Accept() {
 }
 
 string SocketWrapper::Recv(size_t len, int flags) {
-    array<char,len> buf;
+    vector<char> buf(len);
     ssize_t in_len = recv(m_sock_fd, buf.data(), buf.size(), flags);
     if (in_len != len) {
         handle_sys_error("recv");
