@@ -41,8 +41,8 @@ SocketWrapper& SocketWrapper::operator=(const SocketWrapper& other) {
     m_ref_count = other.m_ref_count;
 }
 
-void SocketWrapper::Bind(const string& ipv4_iface_addr, uint16_t port) {
-    sockaddr_in my_addr = make_sockaddr(ipv4_iface_addr, port);
+void SocketWrapper::Bind(const string& iface_addr, uint16_t port) {
+    sockaddr_in my_addr = make_sockaddr(iface_addr, port);
     if (bind(m_sock_fd, (const sockaddr *) &my_addr, sizeof(my_addr)) == -1) {
         handle_sys_error("bind");
     }
@@ -54,8 +54,8 @@ void SocketWrapper::Listen(int backlog) {
     }
 }
 
-void SocketWrapper::Connect(const string& ipv4_addr, uint16_t port) {
-    sockaddr_in conn_addr = make_sockaddr(ipv4_addr, port);
+void SocketWrapper::Connect(const string& addr, uint16_t port) {
+    sockaddr_in conn_addr = make_sockaddr(addr, port);
     if (connect(m_sock_fd, (const sockaddr *) &conn_addr, sizeof(conn_addr)) == -1) {
         handle_sys_error("connect");
     }

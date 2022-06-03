@@ -12,9 +12,9 @@ public:
 
     SocketWrapper& operator=(const SocketWrapper& other);
 
-    void Bind(const string& ipv4_iface_addr, uint16_t port);
+    void Bind(const string& iface_addr, uint16_t port);
     void Listen(int backlog);
-    void Connect(const string& ipv4_addr, uint16_t port);
+    void Connect(const string& addr, uint16_t port);
     SocketWrapper Accept();
     std::string Recv(size_t len, int flags);
     void Send(const std::string& msg, int flags);
