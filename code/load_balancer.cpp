@@ -79,7 +79,11 @@ int LoadBalancer::get_dest(Request req) {
 }
 
 array<int, LoadBalancer::c_num_servers> LoadBalancer::get_goodness(Request req) {
-    return array<int, c_num_servers>{1,2,3}; // TODO: implement the scheduling algorithm
+    static int i = 0;
+    array<int, c_num_servers> out{0,0,0};
+    ++out[i];
+    i = (i + 1) % c_num_servers;
+    return out;
 }
 
 void LoadBalancer::send_server(int server_index) {
