@@ -11,15 +11,34 @@
 
 using namespace std;
 
-SocketWrapper::SocketWrapper() {
+SocketWrapper::SocketWrapper(): m_ref_count(new int(1)) {
     m_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (m_sock_fd == -1) {
+        delete m_ref_count;
         handle_sys_error("socket");
     }
 }
 
+SocketWrapper::SocketWrapper(const SocketWrapper& other):m_sock_fd(other.m_sock_fd), m_ref_count(other.m_ref_count) {
+    ++(*m_ref_count);
+}
+
 SocketWrapper::~SocketWrapper() {
-    close(m_sock_fd);
+    --(*m_ref_count);
+    if (m_ref_count == 0) {
+        delete m_ref_count;
+        close(m_sock_fd);
+    }
+}
+
+SocketWrapper& SocketWrapper::operator=(const SocketWrapper& other) {
+    --(*m_ref_count);
+    if (m_ref_count == 0) {
+        delete m_ref_count;
+        close(m_sock_fd);
+    }
+    m_sock_fd = other.m_sock_fd;
+    m_ref_count = other.m_ref_count;
 }
 
 void SocketWrapper::Bind(const string& ipv4_iface_addr, uint16_t port) {
@@ -66,4 +85,4 @@ void SocketWrapper::Send(const string& msg, int flags) {
     }
 }
 
-SocketWrapper::SocketWrapper(int sock_fd): m_sock_fd(sock_fd) {}
+SocketWrapper::SocketWrapper(int sock_fd): m_sock_fd(sock_fd), m_ref_count(new int(1)) {}

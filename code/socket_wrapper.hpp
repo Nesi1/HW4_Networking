@@ -7,10 +7,10 @@ class SocketWrapper
 public:
 
     SocketWrapper();
-    SocketWrapper(const SocketWrapper& other) = delete;
+    SocketWrapper(const SocketWrapper& other);
     ~SocketWrapper();
 
-    SocketWrapper& operator=(const SocketWrapper& other) = delete;
+    SocketWrapper& operator=(const SocketWrapper& other);
 
     void Bind(const string& ipv4_iface_addr, uint16_t port);
     void Listen(int backlog);
@@ -22,6 +22,7 @@ public:
 private:
 
     int m_sock_fd;
+    int* m_ref_count;
 
     SocketWrapper(int sock_fd);
 
