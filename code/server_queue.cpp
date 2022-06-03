@@ -5,9 +5,13 @@
 
 using namespace std;
 
+ServerQueue::QueueItem::QueueItem(const std::string& msg, const SocketWrapper& response_sock):
+msg(msg), response_sock(response_sock)
+{}
+
 void ServerQueue::push(const string& msg, const SocketWrapper& sock) {
     lock_guard<mutex> lock(m_mutex);
-    m_queue.push(QueueItem{msg, sock});
+    m_queue.push(QueueItem(msg, sock));
     m_cond_var.notify_one();
 }
 

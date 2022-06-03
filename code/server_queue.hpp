@@ -14,6 +14,8 @@ public:
     struct QueueItem {
         std::string msg;
         SocketWrapper response_sock;
+
+        QueueItem(const std::string& msg, const SocketWrapper& response_sock);
     };
 
     void push(const std::string& msg, const SocketWrapper& sock);
