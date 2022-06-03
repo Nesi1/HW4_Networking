@@ -1,4 +1,5 @@
-#include "server_queue.h"
+#include "server_queue.hpp"
+#include "socket_wrapper.hpp"
 
 #include <mutex>
 
@@ -11,7 +12,7 @@ void ServerQueue::push(const string& msg, const SocketWrapper& sock) {
 }
 
 ServerQueue::QueueItem ServerQueue::pop() {
-    lock_guard lock(m_mutex);
+    unique_lock<mutex> lock(m_mutex);
     while (m_queue.empty()) {
         m_cond_var.wait(lock);
     }

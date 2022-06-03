@@ -8,11 +8,11 @@
 
 using namespace std;
 
-sockaddr_in make_sockaddr(const std::string& ipv4_addr, uint16_t port) {
+sockaddr_in make_sockaddr(const std::string& addr, uint16_t port) {
     sockaddr_in out;
     out.sin_family = AF_INET;
     out.sin_port = htons(port);
-    out.sin_addr.s_addr = inet_aton(ip_addr.c_str());
+    inet_aton(addr.c_str(), &out.sin_addr);
     return out;
 }
 
