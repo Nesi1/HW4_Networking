@@ -9,23 +9,27 @@
 #include <string>
 #include <vector>
 
-#define NUM_SERVERS 3
-
 class LoadBalancer
 {
 
 public:
 
-    LoadBalancer(); // TODO: implement
+    static const int c_num_servers=3;
+
+    LoadBalancer();
+    
+    void run_lb();
 
 private:
 
     enum class ServerType {
+        NONE,
         VIDEO,
         MUSIC
     };
 
     enum class RequestType {
+        NONE,
         PICTURE,
         VIDEO,
         MUSIC
@@ -35,7 +39,7 @@ private:
         RequestType type;
         int time;
 
-        Request(std::string msg);
+        explicit Request(std::string msg);
     };
 
     struct ServerDescriptor
@@ -45,16 +49,18 @@ private:
         SocketWrapper socket;
         ServerQueue requests_queue;
         ServerQueue feedback_queue;
+
+        ServerDescriptor();
     };
 
-    std::array<ServerDescriptor, NUM_SERVERS> m_servers;
+    std::array<ServerDescriptor, c_num_servers> m_servers;
     SocketWrapper m_listener_socket;
     ServerQueue m_calc_queue;
 
     void listen_clients();
     void calc_dests();
     int get_dest(Request req);
-    std::array<int, NUM_SERVERS> get_goodness(Request req); // TODO: implement
+    std::array<int, c_num_servers> get_goodness(Request req); // TODO: implement
     void send_server(int server_index);
     void recv_server(int server_index);
     

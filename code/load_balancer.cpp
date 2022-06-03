@@ -3,11 +3,42 @@
 #include "utility.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <string>
+#include <thread>
 
 using namespace std;
 
-LoadBalancer::Request::Request(string msg):time(msg[1] - '0') {
+const int c_port = 80;
+const int c_message_length = 2;
+const int c_backlog = 64;
+
+const string c_hosts_iface_addr = "10.0.0.1";
+const array<string, LoadBalancer::c_num_servers> c_server_addrs{
+    "192.168.0.101",
+    "192.168.0.102",
+    "192.168.0.103"
+};
+
+LoadBalancer::LoadBalancer() {
+    m_listener_socket.Bind(c_hosts_iface_addr,c_port);
+    m_listener_socket.Listen(c_backlog);
+    for (int i = 0; i < c_num_servers; ++i) {
+        m_servers[i].socket.Connect(c_server_addrs[i], c_port);
+    }
+}
+
+void LoadBalancer::run_lb() {
+    thread(calc_dests);
+    for (int i = 0; i < c_num_servers; ++i) {
+        thread(send_server, i);
+        thread(send_server, i);
+    }
+    listen_clients();
+    assert(false);
+}
+
+explicit LoadBalancer::Request::Request(string msg):time(msg[1] - '0') {
     switch (msg[0]) {
     case 'P':
         type = RequestType::PICTURE;
@@ -21,10 +52,14 @@ LoadBalancer::Request::Request(string msg):time(msg[1] - '0') {
     }
 }
 
+LoadBalancer::ServerDescriptor::ServerDescriptor():
+remaining_time(0), type(ServerType::NONE)
+{}
+
 void LoadBalancer::listen_clients() {
     while (true) {
         SocketWrapper response_sock = m_listener_socket.Accept();
-        string request_msg = response_sock.Recv(MESSAGE_LENGTH, 0);
+        string request_msg = response_sock.Recv(c_message_length, 0);
         m_calc_queue.push(request_msg, response_sock);
     }
 }
@@ -38,7 +73,7 @@ void LoadBalancer::calc_dests() {
 }
 
 int LoadBalancer::get_dest(Request req) {
-    array<int, NUM_SERVERS> goodness = get_goodness(req);
+    array<int, c_num_servers> goodness = get_goodness(req);
     return distance(goodness.begin(), max_element(goodness.begin(), goodness.end()));
 }
 
@@ -52,7 +87,7 @@ void LoadBalancer::send_server(int server_index) {
 
 void LoadBalancer::recv_server(int server_index) {
     while (true) {
-        string response = m_servers[server_index].socket.Recv(MESSAGE_LENGTH, 0);
+        string response = m_servers[server_index].socket.Recv(c_message_length, 0);
         ServerQueue::QueueItem query = m_servers[server_index].feedback_queue.pop();
         query.response_sock.Send(response, 0);
     }
