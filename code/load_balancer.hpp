@@ -17,8 +17,6 @@ class LoadBalancer
 public:
 
     LoadBalancer(); // TODO: this also needs to initialize the queues
-    void connect_servers();
-    void listen_clients();
 
 private:
 
@@ -50,7 +48,11 @@ private:
 
     std::array<server_descriptor, NUM_SERVERS> m_servers;
     SocketWrapper m_listener_socket;
+    ServerQueue m_calc_queue;
 
+    void connect_servers();
+    void listen_clients();
+    void calc_dests();
     int get_dest(Request req);
     
 };
