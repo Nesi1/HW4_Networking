@@ -1,6 +1,8 @@
 #ifndef SOCKET_WRAPPER_HPP  
 #define SOCKET_WRAPPER_HPP
 
+#include <string>
+
 class SocketWrapper
 {
 
@@ -12,9 +14,9 @@ public:
 
     SocketWrapper& operator=(const SocketWrapper& other);
 
-    void Bind(const string& iface_addr, uint16_t port);
+    void Bind(const std::string& iface_addr, uint16_t port);
     void Listen(int backlog);
-    void Connect(const string& addr, uint16_t port);
+    void Connect(const std::string& addr, uint16_t port);
     SocketWrapper Accept();
     std::string Recv(size_t len, int flags);
     void Send(const std::string& msg, int flags);

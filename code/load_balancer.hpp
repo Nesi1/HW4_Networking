@@ -5,6 +5,7 @@
 #include "server_queue.hpp"
 
 #include <array>
+#include <atomic>
 #include <queue>
 #include <string>
 #include <vector>
@@ -18,7 +19,7 @@ public:
 
     LoadBalancer();
     
-    void run_lb();
+    void run();
 
 private:
 
@@ -56,14 +57,16 @@ private:
     std::array<ServerDescriptor, c_num_servers> m_servers;
     SocketWrapper m_listener_socket;
     ServerQueue m_calc_queue;
+    std::atomic<int> m_send_id;
+    std::atomic<int> m_recv_id;
 
     void listen_clients();
     void calc_dests();
     int get_dest(Request req);
-    std::array<int, c_num_servers> get_goodness(Request req); // TODO: implement
-    void send_server(int server_index);
-    void recv_server(int server_index);
-    
+    std::array<int, c_num_servers> get_goodness(Request req);
+    void send_server();
+    void recv_server();
+
 };
 
 #endif // LOAD_BALANCER_HPP

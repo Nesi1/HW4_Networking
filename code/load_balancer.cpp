@@ -20,7 +20,7 @@ const array<string, LoadBalancer::c_num_servers> c_server_addrs{
     "192.168.0.103"
 };
 
-LoadBalancer::LoadBalancer() {
+LoadBalancer::LoadBalancer(): m_send_id(0), m_recv_id(0) {
     m_listener_socket.Bind(c_hosts_iface_addr,c_port);
     m_listener_socket.Listen(c_backlog);
     for (int i = 0; i < c_num_servers; ++i) {
@@ -28,17 +28,17 @@ LoadBalancer::LoadBalancer() {
     }
 }
 
-void LoadBalancer::run_lb() {
+void LoadBalancer::run() {
     thread(calc_dests);
     for (int i = 0; i < c_num_servers; ++i) {
-        thread(send_server, i);
-        thread(send_server, i);
+        thread(send_server);
+        thread(recv_server);
     }
     listen_clients();
     assert(false);
 }
 
-explicit LoadBalancer::Request::Request(string msg):time(msg[1] - '0') {
+LoadBalancer::Request::Request(string msg):time(msg[1] - '0') {
     switch (msg[0]) {
     case 'P':
         type = RequestType::PICTURE;
@@ -77,16 +77,22 @@ int LoadBalancer::get_dest(Request req) {
     return distance(goodness.begin(), max_element(goodness.begin(), goodness.end()));
 }
 
-void LoadBalancer::send_server(int server_index) {
+array<int, LoadBalancer::c_num_servers> LoadBalancer::get_goodness(Request req) {
+    return array<int, c_num_servers>{1,2,3}; // TODO: implement the scheduling algorithm
+}
+
+void LoadBalancer::send_server() {
     while (true) {
+        int server_index = m_send_id.fetch_add(1);
         ServerQueue::QueueItem query = m_servers[server_index].requests_queue.pop();
         m_servers[server_index].socket.Send(query.msg, 0);
         m_servers[server_index].feedback_queue.push(query.msg, query.response_sock);
     }
 }
 
-void LoadBalancer::recv_server(int server_index) {
+void LoadBalancer::recv_server() {
     while (true) {
+        int server_index = m_recv_id.fetch_add(1);
         string response = m_servers[server_index].socket.Recv(c_message_length, 0);
         ServerQueue::QueueItem query = m_servers[server_index].feedback_queue.pop();
         query.response_sock.Send(response, 0);

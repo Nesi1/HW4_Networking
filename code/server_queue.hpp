@@ -1,6 +1,8 @@
 #ifndef SERVER_QUEUE_HPP  
 #define SERVER_QUEUE_HPP
 
+#include "socket_wrapper.hpp"
+
 #include <condition_variable>
 #include <mutex>
 #include <queue>
