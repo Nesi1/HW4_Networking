@@ -9,7 +9,7 @@ using namespace std;
 void LoadBalancer::listen_clients() {
     while (true) {
         SocketWrapper temp_sock = m_listener_socket.Accept();
-        string request_msg = temp_sock.Recv(/*TODO: fill arguments*/);
+        string request_msg = temp_sock.Recv(MESSAGE_LENGTH);
         int dest_server = get_dest(Request(request_msg));
         m_servers[dest_server].requests_queue.push(request_msg, temp_sock);
     }

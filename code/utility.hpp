@@ -7,6 +7,7 @@
 
 #define PORT 80
 #define HOSTS_INTERFACE_ATTR "10.0.0.1"
+#define MESSAGE_LENGTH 2
 
 sockaddr_in make_sockaddr(const std::string& ipv4_addr, uint16_t port);
 
