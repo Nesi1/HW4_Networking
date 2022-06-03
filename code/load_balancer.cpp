@@ -23,7 +23,7 @@ LoadBalancer::Request::Request(string msg):time(msg[1] - '0') {
 void LoadBalancer::listen_clients() {
     while (true) {
         SocketWrapper temp_sock = m_listener_socket.Accept();
-        string request_msg = temp_sock.Recv(MESSAGE_LENGTH);
+        string request_msg = temp_sock.Recv(MESSAGE_LENGTH, 0);
         m_calc_queue.push(request_msg, temp_sock);
     }
 }

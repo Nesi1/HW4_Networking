@@ -38,7 +38,7 @@ private:
         Request(std::string msg);
     };
 
-    struct server_descriptor
+    struct ServerDescriptor
     {
         double remaining_time; //TODO: change type to time
         ServerType type;
@@ -46,7 +46,7 @@ private:
         ServerQueue requests_queue;
     };
 
-    std::array<server_descriptor, NUM_SERVERS> m_servers;
+    std::array<ServerDescriptor, NUM_SERVERS> m_servers;
     SocketWrapper m_listener_socket;
     ServerQueue m_calc_queue;
 
