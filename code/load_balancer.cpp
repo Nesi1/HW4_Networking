@@ -60,7 +60,7 @@ remaining_time(0), type(ServerType::NONE)
 void LoadBalancer::listen_clients() {
     while (true) {
         SocketWrapper response_sock = m_listener_socket.Accept();
-        string request_msg = response_sock.Recv(c_message_length, 0);
+        string request_msg = response_sock.Recv(c_message_length);
         m_calc_queue.push(request_msg, response_sock);
     }
 }
@@ -85,15 +85,15 @@ array<int, LoadBalancer::c_num_servers> LoadBalancer::get_goodness(Request req) 
 void LoadBalancer::send_server(int server_index) {
     while (true) {
         ServerQueue::QueueItem query = m_servers[server_index].requests_queue.pop();
-        m_servers[server_index].socket.Send(query.msg, 0);
+        m_servers[server_index].socket.Send(query.msg);
         m_servers[server_index].feedback_queue.push(query.msg, query.response_sock);
     }
 }
 
 void LoadBalancer::recv_server(int server_index) {
     while (true) {
-        string response = m_servers[server_index].socket.Recv(c_message_length, 0);
+        string response = m_servers[server_index].socket.Recv(c_message_length);
         ServerQueue::QueueItem query = m_servers[server_index].feedback_queue.pop();
-        query.response_sock.Send(response, 0);
+        query.response_sock.Send(response);
     }
 }
