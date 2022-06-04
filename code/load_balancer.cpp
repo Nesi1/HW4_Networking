@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <map>
 #include <string>
 #include <thread>
 
@@ -14,18 +15,19 @@ const int c_message_length = 2;
 const int c_backlog = 64;
 
 const string c_hosts_iface_addr = "10.0.0.1";
-const array<string, LoadBalancer::c_num_servers> c_server_addrs{
+const array<string, LoadBalancer::c_num_servers> c_server_addrs {
     "192.168.0.101",
     "192.168.0.102",
     "192.168.0.103"
 };
 
-LoadBalancer::LoadBalancer() {
+LoadBalancer::LoadBalancer(): m_last_time(time(nullptr)) {
     m_listener_socket.Bind(c_hosts_iface_addr,c_port);
     m_listener_socket.Listen(c_backlog);
     for (int i = 0; i < c_num_servers; ++i) {
         m_servers[i].socket.Connect(c_server_addrs[i], c_port);
     }
+    init_servers_types();
 }
 
 void LoadBalancer::run() {
@@ -39,7 +41,7 @@ void LoadBalancer::run() {
     assert(false);
 }
 
-LoadBalancer::Request::Request(string msg):time(msg[1] - '0') {
+LoadBalancer::Request::Request(const string& msg):time(msg[1] - '0') {
     switch (msg[0]) {
     case 'P':
         type = RequestType::PICTURE;
@@ -57,6 +59,12 @@ LoadBalancer::ServerDescriptor::ServerDescriptor():
 remaining_time(0), type(ServerType::NONE)
 {}
 
+void LoadBalancer::init_servers_types() {
+    m_servers[0].type = ServerType::VIDEO;
+    m_servers[1].type = ServerType::VIDEO;
+    m_servers[2].type = ServerType::MUSIC;
+}
+
 void LoadBalancer::listen_clients() {
     while (true) {
         SocketWrapper response_sock = m_listener_socket.Accept();
@@ -73,17 +81,80 @@ void LoadBalancer::calc_dests() {
     }
 }
 
-int LoadBalancer::get_dest(Request req) {
-    array<int, c_num_servers> goodness = get_goodness(req);
-    return distance(goodness.begin(), max_element(goodness.begin(), goodness.end()));
+int LoadBalancer::get_dest(const Request& req) {
+    update_servers_times();
+    array<int, c_num_servers> goodness = get_goodness_list(req);
+    int server_pick = distance(goodness.begin(), max_element(goodness.begin(), goodness.end()));
+    m_servers[server_pick].remaining_time += get_process_cost(server_pick, req);
+    return server_pick;
 }
 
-array<int, LoadBalancer::c_num_servers> LoadBalancer::get_goodness(Request req) {
-    static int i = 0;
-    array<int, c_num_servers> out{0,0,0};
-    ++out[i];
-    i = (i + 1) % c_num_servers;
-    return out;
+void LoadBalancer::update_servers_times() {
+    time_t current_time = time(nullptr);
+    time_t delta = current_time - m_last_time;
+    for (int i = 0; i < c_num_servers; ++i) {
+        m_servers[i].remaining_time -= delta;
+        if (m_servers[i].remaining_time < 0) {
+            m_servers[i].remaining_time = 0;
+        }
+    }
+    m_last_time = current_time;
+}
+
+array<int, LoadBalancer::c_num_servers> LoadBalancer::get_goodness_list(const Request& req) const {
+    array<int, c_num_servers> goodness;
+    for (int i = 0; i < c_num_servers; ++i) {
+        goodness[i] = get_goodness(i, req);
+    }
+    return goodness;
+}
+
+int LoadBalancer::get_goodness(int server_index, const Request& req) const {
+    int goodness = -m_servers[server_index].remaining_time;
+    goodness -= get_process_cost(server_index, req);
+    return goodness;
+}
+
+int LoadBalancer::get_process_cost(int server_index, const Request& req) const {
+    int factor = 0;
+    switch (m_servers[server_index].type)
+    {
+    case ServerType::MUSIC:
+        switch (req.type)
+        {
+        case RequestType::MUSIC:
+            factor = 1;
+            break;
+        case RequestType::PICTURE:
+            factor = 2;
+            break;
+        case RequestType::VIDEO:
+            factor = 3;
+            break;
+        default:
+            assert(false);
+        }
+        break;
+    case ServerType::VIDEO:
+        switch (req.type)
+        {
+        case RequestType::MUSIC:
+            factor = 2;
+            break;
+        case RequestType::PICTURE:
+            factor = 1;
+            break;
+        case RequestType::VIDEO:
+            factor = 1;
+            break;
+        default:
+            assert(false);
+        }
+        break;
+    default:
+        assert(false);
+    }
+    return factor*req.time;
 }
 
 void LoadBalancer::send_server(int server_index) {
