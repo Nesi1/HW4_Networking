@@ -58,6 +58,7 @@ private:
     SocketWrapper m_listener_socket;
     ServerQueue m_calc_queue;
     time_t m_last_time;
+    double m_est_arr_time;
 
     void init_servers_types();
     void listen_clients();
