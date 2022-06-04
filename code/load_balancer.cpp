@@ -31,13 +31,16 @@ LoadBalancer::LoadBalancer(): m_last_time(time(nullptr)) {
 }
 
 void LoadBalancer::run() {
-    std::array<thread, 1 + c_num_servers*2> t;
-    t[0] = thread(&LoadBalancer::calc_dests, this);
+    std::array<thread, 2 + c_num_servers*2> threads;
+    threads[0] = thread(&LoadBalancer::listen_clients, this);
+    threads[1] = thread(&LoadBalancer::calc_dests, this);
     for (int i = 0; i < c_num_servers; ++i) {
-        t[2*i+1] = thread(&LoadBalancer::send_server, this, i);
-        t[2*i+2] = thread(&LoadBalancer::recv_server, this, i);
+        threads[2*i+2] = thread(&LoadBalancer::send_server, this, i);
+        threads[2*i+3] = thread(&LoadBalancer::recv_server, this, i);
     }
-    listen_clients();
+    for (thread& t:threads) {
+        t.join();
+    }
     assert(false);
 }
 
