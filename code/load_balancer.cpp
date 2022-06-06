@@ -13,11 +13,11 @@ using namespace std;
 const int c_port = 80;
 const int c_message_length = 2;
 const int c_backlog = 64;
-const int c_purity_purge = 1024;
+const int c_purity_purge = 8;
 
 const double c_init_est_arr_time = 0.25;
-const double c_arr_time_bias = 0.8;
-const double c_purity_factor = 2.0;
+const double c_arr_time_bias = 0.75;
+const double c_purity_factor = 3.0;
 
 const string c_hosts_iface_addr = "10.0.0.1";
 const array<string, LoadBalancer::c_num_servers> c_server_addrs {
