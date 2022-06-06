@@ -1,9 +1,9 @@
 import random
 
-length = 20
+length = 50
 
 for i in range(1,6,1):
-    file_name = "t2/h" + str(i) + ".in"
+    file_name = "t4/h" + str(i) + ".in"
     f = open(file_name, "w")
     string = ""
     for j in range(length):
