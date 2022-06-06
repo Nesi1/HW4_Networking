@@ -2,7 +2,7 @@ import random
 
 length = 20
 
-for i in range(5):
+for i in range(1,6,1):
     file_name = "t2/h" + str(i) + ".in"
     f = open(file_name, "w")
     string = ""
