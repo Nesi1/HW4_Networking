@@ -36,7 +36,7 @@ LoadBalancer::LoadBalancer(): m_last_time(time(nullptr)), m_est_arr_time(c_init_
 }
 
 void LoadBalancer::run() {
-    std::array<thread, 2 + c_num_servers*2> threads;
+    array<thread, 2 + c_num_servers*2> threads;
     threads[0] = thread(&LoadBalancer::listen_clients, this);
     threads[1] = thread(&LoadBalancer::calc_dests, this);
     for (int i = 0; i < c_num_servers; ++i) {
