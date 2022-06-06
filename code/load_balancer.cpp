@@ -13,9 +13,10 @@ using namespace std;
 const int c_port = 80;
 const int c_message_length = 2;
 const int c_backlog = 64;
-const int c_purity_purge = 8;
+const int c_purity_purge = 4;
+const int c_empty_server_factor = 3;
 
-const double c_init_est_arr_time = 0.25;
+const double c_init_est_arr_time = 5.0;
 const double c_arr_time_bias = 0.75;
 const double c_purity_factor = 3.0;
 
@@ -122,7 +123,8 @@ int LoadBalancer::get_goodness(int server_index, const Request& req) const {
     int remaining_time = m_servers[server_index].remaining_time;
     int proc_cost = get_process_cost(server_index, req);
     int purity_thres = c_purity_factor * m_est_arr_time;
-    int goodness = -(remaining_time + proc_cost);
+    int empty_server_bonus = remaining_time == 0 ? m_est_arr_time * c_empty_server_factor : 0;
+    int goodness = empty_server_bonus - (remaining_time + proc_cost);
     if (req.time != proc_cost && proc_cost > purity_thres) {
         goodness -= c_purity_purge;
     }
