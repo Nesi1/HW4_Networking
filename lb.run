@@ -1,3 +1,10 @@
 #!/bin/bash
 
+# SFT + purity threshould
 sudo code/lb
+
+# SFT
+# sudo lb_shortest_finish_time
+
+#Rounnd Robin
+# sudo lb_round_robin
