@@ -7,7 +7,7 @@ for i in range(5):
     f = open(file_name, "w")
     string = ""
     for j in range(length):
-        time = random.randrange(0,9,1)
+        time = random.randrange(1,9,1)
         type = random.choice(['M', 'P', 'V'])
         string += type
         string += str(time)
