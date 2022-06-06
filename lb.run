@@ -4,7 +4,7 @@
 sudo code/lb
 
 # SFT
-# sudo lb_shortest_finish_time
+# sudo code/lb_SFT
 
 #Rounnd Robin
-# sudo lb_round_robin
+# sudo code/lb_RR
